@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -133,6 +134,8 @@ func (s *Session) connect(passwd string, session sshserver.Session, conn net.Con
 		if err != nil {
 			return err
 		}
+		fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbb")
+		fmt.Println(pty.Window.Width)
 
 		go func() {
 			for win := range winCh {
@@ -164,11 +167,49 @@ func (s *Session) connect(passwd string, session sshserver.Session, conn net.Con
 		}()
 
 		go func() {
-			if _, err = io.Copy(s.session, stdout); err != nil {
-				logrus.WithFields(logrus.Fields{
-					"session": s.UID,
-					"err":     err,
-				}).Error("Failed to copy from stdout in pty session")
+			buf := make([]byte, 1024)
+			n, err := stdout.Read(buf)
+			waitingString := ""
+			if err == nil {
+				if bytes.Contains(buf[:n], []byte("\n")) {
+					waitingString = string(buf[:n])
+					var sessionRecord struct {
+						Log    string `json:"log"`
+						Height int    `json:"height"`
+						Width  int    `json:"width"`
+					}
+					sessionRecord.Log = waitingString
+					sessionRecord.Height = pty.Window.Height
+					sessionRecord.Width = pty.Window.Width
+					fmt.Println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+					fmt.Println(sessionRecord)
+					_, _, _ = gorequest.New().Post(fmt.Sprintf("http://api:8080/internal/sessions/%s/record", s.UID)).Send(sessionRecord).End()
+					waitingString = ""
+				}
+			}
+			for {
+				n, err = stdout.Read(buf)
+				if err != nil {
+					break
+				}
+				bufReader := bytes.NewReader(buf[:n])
+				if _, err = io.Copy(s.session, bufReader); err != nil {
+					logrus.WithFields(logrus.Fields{
+						"session": s.UID,
+						"err":     err,
+					}).Error("Failed to copy from stdout in pty session")
+				}
+				waitingString += string(buf[:n])
+				var sessionRecord struct {
+					Log    string `json:"log"`
+					Height int    `json:"height"`
+					Width  int    `json:"width"`
+				}
+				sessionRecord.Log = waitingString
+				sessionRecord.Height = pty.Window.Height
+				sessionRecord.Width = pty.Window.Width
+				_, _, _ = gorequest.New().Post(fmt.Sprintf("http://api:8080/internal/sessions/%s/record", s.UID)).Send(sessionRecord).End()
+				waitingString = ""
 			}
 		}()
 

@@ -75,6 +75,8 @@ func main() {
 	internalAPI.PATCH(routes.SetSessionAuthenticatedURL, apicontext.Handler(routes.SetSessionAuthenticated))
 	internalAPI.POST(routes.CreateSessionURL, apicontext.Handler(routes.CreateSession))
 	internalAPI.POST(routes.FinishSessionURL, apicontext.Handler(routes.FinishSession))
+	internalAPI.POST(routes.RecordSessionURL, apicontext.Handler(routes.RecordSession))
+	publicAPI.GET(routes.PlaySessionURL, apicontext.Handler(routes.PlaySession))
 
 	publicAPI.GET(routes.GetFirewallRuleListURL, apicontext.Handler(routes.GetFirewallRuleList))
 	publicAPI.GET(routes.GetFirewallRuleURL, apicontext.Handler(routes.GetFirewallRule))

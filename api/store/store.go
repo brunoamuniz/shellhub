@@ -21,6 +21,7 @@ type Store interface {
 	SetSessionAuthenticated(ctx context.Context, uid models.UID, authenticated bool) error
 	KeepAliveSession(ctx context.Context, uid models.UID) error
 	DeactivateSession(ctx context.Context, uid models.UID) error
+	RecordSession(ctx context.Context, uid models.UID, record string, width int, height int) error
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 	GetUserByTenant(ctx context.Context, tenant string) (*models.User, error)
 	GetDeviceByMac(ctx context.Context, mac, tenant string) (*models.Device, error)
@@ -32,4 +33,5 @@ type Store interface {
 	UpdateFirewallRule(ctx context.Context, id string, rule models.FirewallRuleUpdate) (*models.FirewallRule, error)
 	DeleteFirewallRule(ctx context.Context, id string) error
 	GetStats(ctx context.Context) (*models.Stats, error)
+	GetRecord(ctx context.Context, uid models.UID) ([]models.RecordedSession, int, error)
 }
