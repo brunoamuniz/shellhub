@@ -43,7 +43,7 @@
 
           <DeviceActionButton
             :uid="item.uid"
-            action="reject"
+            action="remove"
             @update="refresh"
           />
         </template>
@@ -69,6 +69,7 @@ export default {
     return {
       pagination: {},
       copySnack: false,
+      editName: '',
       search: '',
       headers: [
         {
@@ -109,18 +110,18 @@ export default {
   watch: {
     pagination: {
       handler() {
-        this.getDevices();
+        this.getRejectedDevices();
       },
       deep: true,
     },
 
     search() {
-      this.getDevices();
+      this.getRejectedDevices();
     },
   },
 
   methods: {
-    getDevices() {
+    async getRejectedDevices() {
       let filter = null;
       let encodedFilter = null;
 
@@ -133,14 +134,14 @@ export default {
         perPage: this.pagination.itemsPerPage,
         page: this.pagination.page,
         filter: encodedFilter,
-        status: 'pending',
+        status: 'deny',
       };
 
       this.$store.dispatch('devices/fetch', data);
     },
 
     refresh() {
-      this.getPendingDevices();
+      this.getRejectedDevices();
     },
   },
 };
