@@ -1,11 +1,11 @@
 import http from '@/helpers/http';
 
-export const fetchDevices = async (perPage, page, search, pending) => {
+export const fetchDevices = async (perPage, page, search, status) => {
   let query = '';
   if (search === null) {
-    query = `/devices?per_page=${perPage}&page=${page}&pending=${pending}`;
+    query = `/devices?per_page=${perPage}&page=${page}&status=${status}`;
   } else {
-    query = `/devices?per_page=${perPage}&page=${page}&filter=${search}&pending=${pending}`;
+    query = `/devices?per_page=${perPage}&page=${page}&filter=${search}&status=${status}`;
   }
   return http().get(query);
 };
