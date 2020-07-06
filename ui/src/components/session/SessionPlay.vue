@@ -105,6 +105,7 @@
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import moment from 'moment';
+import 'moment-duration-format';
 import 'xterm/css/xterm.css';
 
 export default {
@@ -198,14 +199,11 @@ export default {
       } else { // it will format to the time argument passed
         interval = timeMs;
       }
-      const duration = moment.duration(interval, 'milliseconds');
-      const TimeObject = {
-        seconds: Math.floor(duration.asSeconds()),
-        minutes: Math.floor(duration.asMinutes()),
-        hours: Math.floor(duration.asHours()),
-      };
+      const duration = moment.duration(interval, 'milliseconds').format('hh:mm:ss:SS', {
+        trim: false,
+      });
       return {
-        display: `${TimeObject.hours}:${TimeObject.minutes}:${TimeObject.seconds}`, // format to slider label
+        display: duration,
         intervalLength: interval, // length of slider in Ms
       };
     },
