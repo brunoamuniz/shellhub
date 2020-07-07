@@ -27,29 +27,16 @@
           <v-spacer />
         </v-toolbar>
         <div ref="playterminal" />
-        <v-container>
+        <v-container
+          v-if="disable"
+        >
           <v-row no-gutters>
             <v-col
               cols="2"
               sm="6"
-              md="2"
+              md="1"
             >
               <v-card
-                v-if="!disable"
-                :elevation="0"
-                class="pt-4"
-                tile
-              >
-                <v-btn
-                  large
-                  color="primary"
-                  @click="connect()"
-                >
-                  Watch
-                </v-btn>
-              </v-card>
-              <v-card
-                v-else
                 :elevation="0"
                 class="pt-4"
                 tile
@@ -57,7 +44,7 @@
                 <v-icon
                   v-if="!paused"
                   large
-                  class="pl-12"
+                  class="pl-4"
                   color="primary"
                   @click="paused = !paused"
                 >
@@ -66,12 +53,50 @@
                 <v-icon
                   v-else
                   large
-                  class="pl-12"
+                  class="pl-4"
                   color="primary"
                   @click="paused = !paused"
                 >
                   mdi-play-circle
                 </v-icon>
+              </v-card>
+            </v-col>
+            <v-col
+              cols="6"
+              md="1"
+            >
+              <v-card
+                :elevation="0"
+                class="pt-4"
+                tile
+              >
+                <v-menu
+                  top
+                  offset-x
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      v-bind="attrs"
+                      large
+                      class="pl-2"
+                      color="primary"
+                      v-on="on"
+                    >
+                      mdi-speedometer
+                    </v-icon>
+                  </template>
+                  <v-list>
+                    <v-list-item
+                      v-for="speed in speedList"
+                      :key="speed"
+                      link
+                      @click="speedChange(speed)"
+                    >
+                      <v-list-item-title>{{ speed }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+                <v-card />
               </v-card>
             </v-col>
             <v-col
@@ -94,6 +119,23 @@
               </v-card>
             </v-col>
           </v-row>
+        </v-container>
+        <v-container
+          v-else
+        >
+          <v-card
+            :elevation="0"
+            class="pt-4"
+            tile
+          >
+            <v-btn
+              large
+              color="primary"
+              @click="connect()"
+            >
+              Watch
+            </v-btn>
+          </v-card>
         </v-container>
       </v-card>
     </v-dialog>
@@ -132,10 +174,12 @@ export default {
       getTimerNow: null,
       paused: false,
       sliderChange: false,
+      speedList: [0.5, 1, 1.5, 2, 4],
       logs: [],
       frames: [],
       cols: 0,
       rows: 0,
+      defaultSpeed: 1,
     };
   },
 
@@ -232,12 +276,16 @@ export default {
       return arrFrames;
     },
 
+    speedChange(speed) {
+      this.defaultSpeed = speed;
+    },
+
     timer() { // Increments the slider
       if (!this.paused) {
         if (this.currentTime >= this.totalLength) return;
         this.currentTime += 100;
       }
-      this.iterativeTimer = setTimeout(this.timer.bind(null), 100);
+      this.iterativeTimer = setTimeout(this.timer.bind(null), 100 * (1 / this.defaultSpeed));
     },
 
     connect() {
@@ -302,7 +350,8 @@ export default {
         const nowTimerDisplay = new Date(logsArray[i].time);
         const future = new Date(logsArray[i + 1].time);
         const interval = future - nowTimerDisplay;
-        this.iterativePrinting = setTimeout(this.print.bind(null, i + 1, logsArray), interval);
+        this.iterativePrinting = setTimeout(this.print.bind(null, i + 1, logsArray),
+          interval * (1 / this.defaultSpeed));
       } else { // try to execute back every 100 ms
         this.iterativePrinting = setTimeout(this.print.bind(null, i, logsArray), 100);
       }
