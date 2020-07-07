@@ -54,12 +54,6 @@
                 class="pt-4"
                 tile
               >
-                <v-card-text
-                  v-if="sliderChange"
-                >
-                  {{ currentTime }}
-                </v-card-text>
-
                 <v-icon
                   v-if="!paused"
                   large
@@ -138,7 +132,6 @@ export default {
       getTimerNow: null,
       paused: false,
       sliderChange: false,
-      randomText: 'ndeio wendiowe nfie fwe',
       logs: [],
       frames: [],
       cols: 0,
@@ -184,8 +177,6 @@ export default {
       this.cols = this.logs[0].width;
       this.rows = this.logs[0].height;
       this.frames = this.createFrames();
-      // eslint-disable-next-line no-console
-      console.log(this.frames[0].incTime);
     }
   },
 
@@ -255,8 +246,8 @@ export default {
       this.$nextTick(() => this.fitAddon.fit());
       this.fitAddon.fit();
       this.xterm.focus();
-      // this.print(0, this.logs);
-      this.printTest();
+      this.print(0, this.logs);
+      // this.printTest();
       this.timer();
       if (this.xterm.element) { // check already existence
         this.xterm.reset();
@@ -265,6 +256,7 @@ export default {
 
     changeSliderTime() { // Moving the Slider
       this.sliderChange = true;
+      this.xtermSyncFrame(this.currentTime);
     },
 
     close() {
@@ -276,14 +268,35 @@ export default {
       this.paused = false;
     },
 
-    printTest() { // delete
-      this.xterm.write(this.frames[this.frames.length - 1].incMessage);
-      setTimeout(() => { this.xterm.write('\u001Bc'); this.xterm.write('Another Random Message\n'); }, 4000);
+    xtermSyncFrame(givenTime) {
+      this.xterm.write('\u001Bc'); // clean screen
+      const frame = this.searchClosestFrame(givenTime, this.frames);
+      this.xterm.write(frame.message); // write frame on xterm
+      clearInterval(this.iterativePrinting); // Ensure to clear functions for syncronism
+      clearInterval(this.iterativeTimer);
+      // stop print
+      this.timer();
+      this.print(frame.index, this.logs); // restart printing where it had stopped
+    },
+
+    searchClosestFrame(givenTime, frames) { // applies a binary search to find nearest frame
+      let between;
+      let lowerBound = 0;
+      let higherBound = frames.length - 1;
+      for (;higherBound - lowerBound > 1;) { // progressive increment search
+        between = Math.floor((lowerBound + higherBound) / 2);
+        if (frames[between].incTime < givenTime) lowerBound = between;
+        else { higherBound = between; } //
+      }
+      return {
+        message: frames[lowerBound].incMessage, // get frame at the left
+        index: lowerBound,
+      };
     },
 
     print(i, logsArray) {
+      this.sliderChange = false;
       if (!this.paused) {
-        this.sliderChange = false;
         this.xterm.write(`${logsArray[i].message}`);
         if (i === logsArray.length - 1) return;
         const nowTimerDisplay = new Date(logsArray[i].time);
