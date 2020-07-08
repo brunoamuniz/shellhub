@@ -5,140 +5,125 @@
         <v-icon
           v-if="auth"
           v-on="on"
-          @click="openPlay()"
+          @click="connect"
         >
           mdi-play-circle
         </v-icon>
       </template>
       <span>Play</span>
     </v-tooltip>
-    <v-dialog
-      v-model="dialog"
-      :max-width="1024"
+    <div
+      v-if="dialog"
     >
-      <v-card
-        :elevation="0"
+      <v-dialog
+        v-model="dialog"
+        :max-width="1024"
       >
-        <v-toolbar
-          dark
-          color="primary"
+        <v-card
+          :elevation="0"
         >
-          <v-toolbar-title>Watch Session</v-toolbar-title>
-          <v-spacer />
-        </v-toolbar>
-        <div ref="playterminal" />
-        <v-container
-          v-if="disable"
-        >
-          <v-row no-gutters>
-            <v-col
-              cols="2"
-              sm="6"
-              md="1"
-            >
-              <v-card
-                :elevation="0"
-                class="pt-4"
-                tile
-              >
-                <v-icon
-                  v-if="!paused"
-                  large
-                  class="pl-4"
-                  color="primary"
-                  @click="paused = !paused"
-                >
-                  mdi-pause-circle
-                </v-icon>
-                <v-icon
-                  v-else
-                  large
-                  class="pl-4"
-                  color="primary"
-                  @click="paused = !paused"
-                >
-                  mdi-play-circle
-                </v-icon>
-              </v-card>
-            </v-col>
-            <v-col
-              cols="6"
-              md="1"
-            >
-              <v-card
-                :elevation="0"
-                class="pt-4"
-                tile
-              >
-                <v-menu
-                  top
-                  offset-x
-                >
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-icon
-                      v-bind="attrs"
-                      large
-                      class="pl-2"
-                      color="primary"
-                      v-on="on"
-                    >
-                      mdi-speedometer
-                    </v-icon>
-                  </template>
-                  <v-list>
-                    <v-list-item
-                      v-for="speed in speedList"
-                      :key="speed"
-                      link
-                      @click="speedChange(speed)"
-                    >
-                      <v-list-item-title>{{ speed }}</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-                <v-card />
-              </v-card>
-            </v-col>
-            <v-col
-              cols="6"
-              md="10"
-            >
-              <v-card
-                :elevation="0"
-                class="pt-4 pr-10"
-                tile
-              >
-                <v-slider
-                  v-model="currentTime"
-                  class="ml-0"
-                  min="0"
-                  :max="totalLength"
-                  :label="`${nowTimerDisplay} - ${endTimerDisplay}`"
-                  @change="changeSliderTime"
-                />
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-container>
-        <v-container
-          v-else
-        >
-          <v-card
-            :elevation="0"
-            class="pt-4"
-            tile
+          <v-toolbar
+            dark
+            color="primary"
           >
-            <v-btn
-              large
-              color="primary"
-              @click="connect()"
-            >
-              Watch
-            </v-btn>
-          </v-card>
-        </v-container>
-      </v-card>
-    </v-dialog>
+            <v-toolbar-title>Watch Session</v-toolbar-title>
+            <v-spacer />
+          </v-toolbar>
+          <div ref="playterminal" />
+          <v-container>
+            <v-row no-gutters>
+              <v-col
+                cols="2"
+                sm="6"
+                md="1"
+              >
+                <v-card
+                  :elevation="0"
+                  class="pt-4"
+                  tile
+                >
+                  <v-icon
+                    v-if="!paused"
+                    large
+                    class="pl-4"
+                    color="primary"
+                    @click="paused = !paused"
+                  >
+                    mdi-pause-circle
+                  </v-icon>
+                  <v-icon
+                    v-else
+                    large
+                    class="pl-4"
+                    color="primary"
+                    @click="paused = !paused"
+                  >
+                    mdi-play-circle
+                  </v-icon>
+                </v-card>
+              </v-col>
+              <v-col
+                cols="6"
+                md="1"
+              >
+                <v-card
+                  :elevation="0"
+                  class="pt-4"
+                  tile
+                >
+                  <v-menu
+                    top
+                    offset-x
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        large
+                        class="pl-2"
+                        color="primary"
+                        v-on="on"
+                      >
+                        mdi-speedometer
+                      </v-icon>
+                    </template>
+                    <v-list>
+                      <v-list-item
+                        v-for="speed in speedList"
+                        :key="speed"
+                        link
+                        @click="speedChange(speed)"
+                      >
+                        <v-list-item-title>{{ speed }}</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                  <v-card />
+                </v-card>
+              </v-col>
+              <v-col
+                cols="6"
+                md="10"
+              >
+                <v-card
+                  :elevation="0"
+                  class="pt-4 pr-10"
+                  tile
+                >
+                  <v-slider
+                    v-model="currentTime"
+                    class="ml-0"
+                    min="0"
+                    :max="totalLength"
+                    :label="`${nowTimerDisplay} - ${endTimerDisplay}`"
+                    @change="changeSliderTime"
+                  />
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+    </div>
   </fragment>
 </template>
 
@@ -226,7 +211,6 @@ export default {
 
   methods: {
     openPlay() {
-      this.dialog = !this.dialog;
       this.xterm = new Terminal({ // instantiate
         cursorBlink: true,
         fontFamily: 'monospace',
@@ -235,6 +219,27 @@ export default {
       });
       this.fitAddon = new FitAddon(); // load fit
       this.xterm.loadAddon(this.fitAddon); // adjust screen in container
+      if (this.xterm.element) {
+        this.xterm.reset();
+      }
+    },
+
+    async displayDialog() { // await to change dialog for the connection
+      this.dialog = await !this.dialog;
+    },
+
+    connect() {
+      this.displayDialog().then(() => {
+        this.openPlay();
+        if (!this.xterm.element) {
+          this.xterm.open(this.$refs.playterminal);
+        }
+        this.$nextTick(() => this.fitAddon.fit());
+        this.fitAddon.fit();
+        this.xterm.focus();
+        this.print(0, this.logs);
+        this.timer();
+      });
     },
 
     getDisplaySliderInfo(timeMs) {
@@ -286,20 +291,6 @@ export default {
         this.currentTime += 100;
       }
       this.iterativeTimer = setTimeout(this.timer.bind(null), 100 * (1 / this.defaultSpeed));
-    },
-
-    connect() {
-      this.disable = true;
-      this.xterm.open(this.$refs.playterminal);
-      this.$nextTick(() => this.fitAddon.fit());
-      this.fitAddon.fit();
-      this.xterm.focus();
-      this.print(0, this.logs);
-      // this.printTest();
-      this.timer();
-      if (this.xterm.element) { // check already existence
-        this.xterm.reset();
-      }
     },
 
     changeSliderTime() { // Moving the Slider
